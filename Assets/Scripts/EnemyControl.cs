@@ -2,6 +2,7 @@
 
 public class EnemyControl : MonoBehaviour
 {
+    public GameObject ExplosionGo;
     [SerializeField] private float speed = 2f;
 
     private float bottomLimit;
@@ -22,5 +23,19 @@ public class EnemyControl : MonoBehaviour
         {
             Destroy(gameObject);
         }
+    }
+    void OnTriggerEnter2D(Collider2D col)
+    {
+        if ((col.tag == "PlayerShipTag") || (col.tag == "PlayerBulletTag"))
+        {
+            PlayExplosion();
+            Destroy(gameObject);
+        }
+    }
+    void PlayExplosion()
+    {
+        GameObject explosion = (GameObject)Instantiate(ExplosionGo);
+
+        explosion.transform.position = transform.position;
     }
 }
