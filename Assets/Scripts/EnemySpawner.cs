@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 
-
 public class SpawnScript : MonoBehaviour
 {
     [SerializeField] private GameObject EnemyGo; // Prefab của enemy sẽ được sinh ra
@@ -19,16 +18,26 @@ public class SpawnScript : MonoBehaviour
         minX = min.x;
         maxX = max.x;
         spawnY = max.y;
+    }
 
-        // Gọi hàm spawn enemy lần đầu sau khoảng thời gian ban đầu
+    // Hàm công khai để bắt đầu sinh enemy
+    public void ScheduleEnemySpawner()
+    {
         Invoke(nameof(SpawnEnemy), maxSpawnRateInSeconds);
-
-        // Gọi hàm tăng độ khó mỗi 30 giây
         InvokeRepeating(nameof(IncreaseSpawnRate), 0f, 30f);
+    }
+
+    // Hàm công khai để dừng sinh enemy
+    public void UnscheduleEnemySpawner()
+    {
+        CancelInvoke(nameof(SpawnEnemy));
+        CancelInvoke(nameof(IncreaseSpawnRate));
     }
 
     void SpawnEnemy()
     {
+        if (EnemyGo == null) return;
+
         // Tạo vị trí ngẫu nhiên theo chiều ngang ở cạnh trên màn hình
         float randomX = Random.Range(minX, maxX);
         Vector2 spawnPosition = new Vector2(randomX, spawnY);
@@ -54,7 +63,6 @@ public class SpawnScript : MonoBehaviour
             spawnInSeconds = 1f; // Giới hạn tối thiểu là 1 giây
         }
 
-        // Gọi lại SpawnEnemy sau khoảng thời gian đã chọn
         Invoke(nameof(SpawnEnemy), spawnInSeconds);
     }
 
@@ -63,7 +71,7 @@ public class SpawnScript : MonoBehaviour
         // Giảm thời gian giữa các lần spawn để tăng độ khó
         if (maxSpawnRateInSeconds > 1f)
         {
-            maxSpawnRateInSeconds--;
+            maxSpawnRateInSeconds = Mathf.Max(1f, maxSpawnRateInSeconds - 1f);
         }
 
         // Nếu đã đạt mức tối thiểu, ngừng tăng độ khó
@@ -73,5 +81,3 @@ public class SpawnScript : MonoBehaviour
         }
     }
 }
-
-

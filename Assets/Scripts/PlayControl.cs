@@ -1,18 +1,37 @@
-﻿using UnityEngine;
-
+﻿using TMPro;
+using UnityEngine;
+using UnityEngine.Audio;
 public class PlayerControl : MonoBehaviour
 {
+    public GameObject GameManagerGo;
     public GameObject PlayerBulletGo;
     public GameObject BulletPosition01;
     public GameObject BulletPosition02;
     public GameObject ExplosionGo;
+    public TMP_Text LivesUIText;
+    [SerializeField] private AudioSource audioSource;
+    const int MaxLives = 3;
+    int lives;
+
     [SerializeField] private float speed = 5f;
+
+     public void Init()
+    {
+        lives = MaxLives;
+
+        LivesUIText.text = lives.ToString();
+
+        transform.position = new Vector2 (0, 0);
+
+        gameObject.SetActive(true);
+    }
 
     private Vector2 min;
     private Vector2 max;
 
     void Start()
     {
+        audioSource = GetComponent<AudioSource>();
         // Tính toán giới hạn màn hình một lần duy nhất
         min = Camera.main.ViewportToWorldPoint(new Vector2(0, 0));
         max = Camera.main.ViewportToWorldPoint(new Vector2(1, 1));
@@ -31,6 +50,8 @@ public class PlayerControl : MonoBehaviour
     {
         if (Input.GetKeyDown("space"))
         {
+            audioSource.Play();
+
             GameObject bullet01 = (GameObject)Instantiate (PlayerBulletGo);
             bullet01.transform.position = BulletPosition01.transform.position;
 
@@ -59,7 +80,18 @@ public class PlayerControl : MonoBehaviour
         if((col.tag == "EnemyShipTag") ||  (col.tag == "EnemyBulletTag"))
         {
             PlayExplosion();
-            Destroy(gameObject);
+            lives--;
+            LivesUIText.text = lives.ToString();
+
+            if(lives == 0)
+            {
+
+                GameManagerGo.GetComponent<GameManager>().SetGameManagerState(GameManager.GameManagerState.GameOver);
+
+                //Destroy(gameObject); hide the player's ship
+                gameObject.SetActive(false);
+            }
+            
         }    
     }
     void PlayExplosion()
