@@ -1,33 +1,48 @@
-﻿using UnityEngine;
+﻿using UnityEngine; // Thư viện chính của Unity, cung cấp các lớp và hàm cần thiết cho game
 
+// Script điều khiển hành vi bắn đạn của enemy
 public class EnemyGun : MonoBehaviour
 {
-    [SerializeField] private GameObject EnemyBulletGo; // Prefab của đạn enemy
+    [SerializeField] private GameObject EnemyBulletGo; // Prefab viên đạn của enemy (gán trong Inspector)
+    [SerializeField] private float fireRate = 0.5f; // Thời gian giữa các lần bắn (tính bằng giây)
+
+    private bool isAlive = true; // Cờ kiểm tra xem enemy còn sống không
 
     void Start()
     {
-        // Gọi hàm bắn đạn sau 1 giây kể từ khi game bắt đầu
-        Invoke(nameof(FireEnemyBullet), 1f);
+        // Gọi hàm FireEnemyBullet lặp lại sau mỗi khoảng thời gian fireRate
+        // Bắt đầu sau 0.5 giây kể từ khi enemy xuất hiện
+        InvokeRepeating(nameof(FireEnemyBullet), 0.5f, fireRate);
     }
 
+    // Hàm xử lý việc bắn đạn
     void FireEnemyBullet()
     {
-        // Tìm GameObject của người chơi theo tên
+        if (!isAlive) return; // Nếu enemy đã chết thì không bắn nữa
+
+        // Tìm GameObject của tàu người chơi theo tên "PlayerGo"
         GameObject playerShip = GameObject.Find("PlayerGo");
 
-        if (playerShip != null) // Nếu người chơi vẫn còn tồn tại
+        if (playerShip != null) // Nếu tìm thấy tàu người chơi
         {
-            // Tạo một viên đạn enemy mới
+            // Tạo một viên đạn mới từ prefab EnemyBulletGo
             GameObject bullet = Instantiate(EnemyBulletGo);
 
-            // Đặt vị trí ban đầu của viên đạn tại vị trí của EnemyGun
+            // Đặt vị trí viên đạn tại vị trí của enemy
             bullet.transform.position = transform.position;
 
-            // Tính toán hướng bay từ enemy đến người chơi
+            // Tính hướng từ enemy đến tàu người chơi
             Vector2 direction = playerShip.transform.position - bullet.transform.position;
 
-            // Gửi hướng bay cho script EnemyBullet để xử lý di chuyển
-            bullet.GetComponent<EnemyBullet>().SetDirection(direction);
+            // Gán hướng bay cho viên đạn (chuẩn hóa để đảm bảo tốc độ ổn định)
+            bullet.GetComponent<EnemyBullet>().SetDirection(direction.normalized);
         }
+    }
+
+    // Hàm này được gọi khi enemy bị tiêu diệt
+    public void StopFiring()
+    {
+        isAlive = false; // Đánh dấu enemy đã chết
+        CancelInvoke(nameof(FireEnemyBullet)); // Ngừng việc gọi lặp lại hàm FireEnemyBullet
     }
 }

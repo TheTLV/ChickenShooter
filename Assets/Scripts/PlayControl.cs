@@ -15,7 +15,9 @@ public class PlayerControl : MonoBehaviour
 
     [SerializeField] private float speed = 5f;
 
-     public void Init()
+    [SerializeField] private bool isInvincible = false;
+
+    public void Init()
     {
         lives = MaxLives;
 
@@ -63,6 +65,12 @@ public class PlayerControl : MonoBehaviour
 
         Vector2 direction = new Vector2(x, y).normalized;
         Move(direction);
+
+        if (Input.GetKeyDown(KeyCode.M))
+        {
+            isInvincible = !isInvincible;
+            LivesUIText.text = isInvincible ? "∞" : lives.ToString();
+        }
     }
 
     void Move(Vector2 direction)
@@ -80,18 +88,26 @@ public class PlayerControl : MonoBehaviour
         if((col.tag == "EnemyShipTag") ||  (col.tag == "EnemyBulletTag"))
         {
             PlayExplosion();
-            lives--;
-            LivesUIText.text = lives.ToString();
-
-            if(lives == 0)
+            if (!isInvincible)
             {
 
-                GameManagerGo.GetComponent<GameManager>().SetGameManagerState(GameManager.GameManagerState.GameOver);
 
-                //Destroy(gameObject); hide the player's ship
-                gameObject.SetActive(false);
+                lives--;
+                LivesUIText.text = lives.ToString();
+
+                if (lives == 0)
+                {
+
+                    GameManagerGo.GetComponent<GameManager>().SetGameManagerState(GameManager.GameManagerState.GameOver);
+
+                    //Destroy(gameObject); hide the player's ship
+                    gameObject.SetActive(false);
+                }
             }
-            
+            else 
+            {
+                LivesUIText.text = "∞";
+            }
         }    
     }
     void PlayExplosion()
